@@ -153,7 +153,7 @@ def temporary_name(prefix="sqlbag_tmp_"):
 
 
 @contextmanager
-def temporary_database(dialect="postgresql", do_not_delete=False, host=None, password=''):
+def temporary_database(dialect="postgresql", do_not_delete=False, host=None, user=None, password=None):
     """
     Args:
         dialect(str): Type of database to create (either 'postgresql', 'mysql', or 'sqlite').
@@ -180,9 +180,12 @@ def temporary_database(dialect="postgresql", do_not_delete=False, host=None, pas
     else:
         tempname = temporary_name()
 
-        current_username = _current_username()
+        current_username = user or _current_username()
 
-        url = "{}://{}:{}@{}/{}".format(dialect, current_username, password, host, tempname)
+        if password:
+            url = "{}://{}:{}@{}/{}".format(dialect, current_username, password, host, tempname)
+        else:
+            url = "{}://{}@{}/{}".format(dialect, current_username, host, tempname)
 
         if url.startswith("mysql:"):
             url = url.replace("mysql:", "mysql+pymysql:", 1)
